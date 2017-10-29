@@ -26,13 +26,28 @@ import (
 	"linux.xidian.edu.cn/git/XDU_ACM_ICPC/XDOJ-next/XDOJudged/posixtime"
 )
 
-func TestPredefined(t *testing.T) {
+func TestGetTime(t *testing.T) {
 	for i := 0; i < posixtime.CLOCK_PREDEF_NUM; i++ {
 		if i == 10 {
 			continue // no such clock
 		}
 		clock := posixtime.ClockID(i)
 		time, err := clock.GetTime()
+		if err != nil {
+			t.Errorf("Can not get the time of clock ID %d: %v", i, err)
+		} else {
+			t.Logf("clock ID = %d, result = %v", i, time)
+		}
+	}
+}
+
+func TestGetRes(t *testing.T) {
+	for i := 0; i < posixtime.CLOCK_PREDEF_NUM; i++ {
+		if i == 10 {
+			continue // no such clock
+		}
+		clock := posixtime.ClockID(i)
+		time, err := clock.GetRes()
 		if err != nil {
 			t.Errorf("Can not get the time of clock ID %d: %v", i, err)
 		} else {

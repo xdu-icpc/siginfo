@@ -69,6 +69,22 @@ const (
 	CLOCK_PREDEF_NUM int = iota // The number of predefined clocks.
 )
 
+// GetRes returns resolution (precision) of a POSIX clock.
+func (clock ClockID) GetRes() (*time.Time, error) {
+	var ts syscall.Timespec
+
+	_, _, errno := syscall.Syscall(syscall.SYS_CLOCK_GETRES,
+		uintptr(clock),
+		uintptr(unsafe.Pointer(&ts)),
+		uintptr(0))
+	if errno != 0 {
+		return nil, errno
+	}
+
+	ret := time.Unix(ts.Unix())
+	return &ret, nil
+}
+
 // Returns a ClockID of a POSIX CPU-time clock of the given PID.
 //
 // Note: a CPU-time clock is bound to a PID, not a specific process.
@@ -79,14 +95,13 @@ func GetCPUClockID(pid int) (*ClockID, error) {
 	id := ClockID((^pid)<<3 | 2)
 
 	/* Do a clock_getres call to validate it.  */
-	_, _, errno := syscall.Syscall(syscall.SYS_CLOCK_GETRES,
-		uintptr(id), uintptr(0), uintptr(0))
-	if errno == syscall.EINVAL {
-		errno = syscall.ESRCH
+	_, err := id.GetRes()
+	if err == syscall.EINVAL {
+		err = syscall.ESRCH
 	}
 
-	if errno != 0 {
-		return nil, errno
+	if err != nil {
+		return nil, err
 	}
 
 	return &id, nil
