@@ -72,8 +72,18 @@ func TestCPUClock(t *testing.T) {
 }
 
 func TestSleep(t *testing.T) {
+	t0 := time.Now()
 	err := posixtime.CLOCK_MONOTONIC.Sleep(time.Second)
 	if err != nil {
 		t.Fatalf("Can not Sleep on CLOCK_MONOTONIC: %v", err)
+	}
+
+	d := time.Now().Sub(t0)
+	delta := d.Nanoseconds() - time.Second.Nanoseconds()
+	if delta < 0 { // POSIX said it's impossible
+		t.Errorf("Slept too short: delta = %d ns", delta)
+	}
+	if delta > 50000000 { // max tolerance is 50ms
+		t.Errorf("Slept too long: delta = %d ns", delta)
 	}
 }
