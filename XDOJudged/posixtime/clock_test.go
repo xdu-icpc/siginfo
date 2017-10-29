@@ -22,6 +22,7 @@ package posixtime_test
 
 import (
 	"testing"
+	"time"
 
 	"linux.xidian.edu.cn/git/XDU_ACM_ICPC/XDOJ-next/XDOJudged/posixtime"
 )
@@ -68,4 +69,11 @@ func TestCPUClock(t *testing.T) {
 	}
 
 	t.Logf("result = %v", time)
+}
+
+func TestSleep(t *testing.T) {
+	err := posixtime.CLOCK_MONOTONIC.Sleep(time.Second)
+	if err != nil {
+		t.Fatalf("Can not Sleep on CLOCK_MONOTONIC: %v", err)
+	}
 }

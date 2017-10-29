@@ -122,3 +122,32 @@ func (clock ClockID) GetTime() (*time.Time, error) {
 	ret := time.Unix(ts.Unix())
 	return &ret, nil
 }
+
+// Sleep pauses the current goroutine for at least duration d on a POSIX
+// clock.  A negative or zero duration causes Sleep to return immediately.
+func (clock ClockID) Sleep(d time.Duration) error {
+	// TODO: POSIX said this should be a cancellation point.  But I don't
+	// know how to do it.
+
+	// The system call doesn't support predefined CPU clocks.
+	// Special case them.
+
+	if clock == CLOCK_THREAD_CPUTIME_ID {
+		return syscall.EINVAL
+	}
+	if clock == CLOCK_PROCESS_CPUTIME_ID {
+		clock = ClockID((^0)<<3 | 2)
+	}
+
+	ts := syscall.NsecToTimespec(d.Nanoseconds())
+
+	_, _, errno := syscall.Syscall6(syscall.SYS_CLOCK_NANOSLEEP,
+		uintptr(clock), uintptr(0), uintptr(unsafe.Pointer(&ts)),
+		uintptr(0), uintptr(0), uintptr(0))
+
+	if errno == 0 {
+		return nil
+	}
+
+	return errno
+}
