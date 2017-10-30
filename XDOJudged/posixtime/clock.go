@@ -91,10 +91,10 @@ func (clock ClockID) GetRes() (*time.Time, error) {
 // If a new process assumed the PID, the clock would show the CPU
 // time of this new process.
 func GetCPUClockID(pid int) (*ClockID, error) {
-	/* This magic expression is from Linux kernel ABI for CPU clocks.  */
+	// This magic expression is from Linux kernel ABI for CPU clocks.
 	id := ClockID((^pid)<<3 | 2)
 
-	/* Do a clock_getres call to validate it.  */
+	// Do a clock_getres call to validate it.
 	_, err := id.GetRes()
 	if err == syscall.EINVAL {
 		err = syscall.ESRCH
@@ -126,12 +126,14 @@ func (clock ClockID) GetTime() (*time.Time, error) {
 // Sleep pauses the current goroutine for at least duration d on a POSIX
 // clock.  A negative or zero duration causes Sleep to return immediately.
 func (clock ClockID) Sleep(d time.Duration) error {
-	// TODO: POSIX said this should be a cancellation point.  But I don't
-	// know how to do it.
+	// POSIX said clock_nanosleep should be a cancellation point.  But
+	// goroutines can't be canceled so we ignore the cancellation things.
+	// And also, POSIX said clock_nanosleep can be interrupted and return
+	// the remain unslept duration.  Normal goroutines won't handle os
+	// signals so we don't use this feature.
 
 	// The system call doesn't support predefined CPU clocks.
 	// Special case them.
-
 	if clock == CLOCK_THREAD_CPUTIME_ID {
 		return syscall.EINVAL
 	}
@@ -139,6 +141,7 @@ func (clock ClockID) Sleep(d time.Duration) error {
 		clock = ClockID((^0)<<3 | 2)
 	}
 
+	// Do real system call.
 	ts := syscall.NsecToTimespec(d.Nanoseconds())
 
 	_, _, errno := syscall.Syscall6(syscall.SYS_CLOCK_NANOSLEEP,
