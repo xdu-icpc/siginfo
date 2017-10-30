@@ -21,6 +21,7 @@
 package posixtime_test
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -71,19 +72,28 @@ func TestCPUClock(t *testing.T) {
 	t.Logf("result = %v", time)
 }
 
-func TestSleep(t *testing.T) {
+func sleepWell(d time.Duration) error {
 	t0 := time.Now()
-	err := posixtime.CLOCK_MONOTONIC.Sleep(time.Second)
+	err := posixtime.CLOCK_MONOTONIC.Sleep(d)
 	if err != nil {
-		t.Fatalf("Can not Sleep on CLOCK_MONOTONIC: %v", err)
+		return err
 	}
 
-	d := time.Now().Sub(t0)
-	delta := d.Nanoseconds() - time.Second.Nanoseconds()
+	d1 := time.Now().Sub(t0)
+	delta := d1.Nanoseconds() - d.Nanoseconds()
 	if delta < 0 { // POSIX said it's impossible
-		t.Errorf("Slept too short: delta = %d ns", delta)
+		return fmt.Errorf("Slept too short: delta = %d ns", delta)
 	}
 	if delta > 50000000 { // max tolerance is 50ms
-		t.Errorf("Slept too long: delta = %d ns", delta)
+		return fmt.Errorf("Slept too long: delta = %d ns", delta)
+	}
+
+	return nil
+}
+
+func TestSleep(t *testing.T) {
+	err := sleepWell(time.Second)
+	if err != nil {
+		t.Errorf("%s", err.Error())
 	}
 }
