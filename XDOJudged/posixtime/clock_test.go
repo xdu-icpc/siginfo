@@ -97,3 +97,31 @@ func TestSleep(t *testing.T) {
 		t.Errorf("%s", err.Error())
 	}
 }
+
+func TestWaitUntil(t *testing.T) {
+	t0, err := posixtime.CLOCK_MONOTONIC.GetTime()
+	if err != nil {
+		t.Fatalf("can not get time of CLOCK_MONOTONIC: %v", err)
+	}
+
+	// +1s?
+	ts := t0.Add(time.Second)
+
+	err = posixtime.CLOCK_MONOTONIC.WaitUntil(ts)
+	if err != nil {
+		t.Fatalf("can not wait until a time: %v", err)
+	}
+
+	t1, err := posixtime.CLOCK_MONOTONIC.GetTime()
+	if err != nil {
+		t.Fatalf("can not get time of CLOCK_MONOTONIC: %v", err)
+	}
+
+	delta := t1.Sub(ts).Nanoseconds()
+	if delta < 0 { // POSIX said it's impossible
+		t.Errorf("not waited until the time: delta = %d ns", delta)
+	}
+	if delta > 50000000 { // max tolerance is 50ms
+		t.Errorf("waited for too long: delta = %d ns", delta)
+	}
+}

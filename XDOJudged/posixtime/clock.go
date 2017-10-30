@@ -123,9 +123,7 @@ func (clock ClockID) GetTime() (*time.Time, error) {
 	return &ret, nil
 }
 
-// Sleep pauses the current goroutine for at least duration d on a POSIX
-// clock.  A negative or zero duration causes Sleep to return immediately.
-func (clock ClockID) Sleep(d time.Duration) error {
+func (clock ClockID) nanosleep(ts syscall.Timespec, flag int) error {
 	// POSIX said clock_nanosleep should be a cancellation point.  But
 	// goroutines can't be canceled so we ignore the cancellation things.
 	// And also, POSIX said clock_nanosleep can be interrupted and return
@@ -142,10 +140,8 @@ func (clock ClockID) Sleep(d time.Duration) error {
 	}
 
 	// Do real system call.
-	ts := syscall.NsecToTimespec(d.Nanoseconds())
-
 	_, _, errno := syscall.Syscall6(syscall.SYS_CLOCK_NANOSLEEP,
-		uintptr(clock), uintptr(0), uintptr(unsafe.Pointer(&ts)),
+		uintptr(clock), uintptr(flag), uintptr(unsafe.Pointer(&ts)),
 		uintptr(0), uintptr(0), uintptr(0))
 
 	if errno == 0 {
@@ -153,4 +149,26 @@ func (clock ClockID) Sleep(d time.Duration) error {
 	}
 
 	return errno
+}
+
+// Sleep pauses the current goroutine for at least duration d on a POSIX
+// clock.  A negative or zero duration causes Sleep to return immediately.
+func (clock ClockID) Sleep(d time.Duration) error {
+	return clock.nanosleep(syscall.NsecToTimespec(d.Nanoseconds()), 0)
+}
+
+// We won't expose this out of the package since Go has different types
+// for time and duration.  We'll use different method names and parameter
+// types to distinguish durations and absolute times.
+const _TIMER_ABSTIME = 1
+
+// WaitUntil pauses the current goroutine until the POSIX clock reaches
+// time t.  A time before current time causes WaitUntil to return
+// immediately.
+func (clock ClockID) WaitUntil(t time.Time) error {
+	ts := syscall.Timespec{
+		syscall.Timespec_sec_t(t.Unix()),
+		syscall.Timespec_nsec_t(t.Nanosecond()),
+	}
+	return clock.nanosleep(ts, _TIMER_ABSTIME)
 }
