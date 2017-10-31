@@ -70,7 +70,7 @@ const (
 )
 
 // GetRes returns resolution (precision) of a POSIX clock.
-func (clock ClockID) GetRes() (*time.Time, error) {
+func (clock ClockID) GetRes() (*time.Duration, error) {
 	var ts syscall.Timespec
 
 	_, _, errno := syscall.Syscall(syscall.SYS_CLOCK_GETRES,
@@ -81,7 +81,7 @@ func (clock ClockID) GetRes() (*time.Time, error) {
 		return nil, errno
 	}
 
-	ret := time.Unix(ts.Unix())
+	ret := time.Duration(ts.Nano()) * time.Nanosecond
 	return &ret, nil
 }
 
