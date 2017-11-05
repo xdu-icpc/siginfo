@@ -21,7 +21,6 @@
 package posixtime_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -80,15 +79,7 @@ func sleepWell(d time.Duration) error {
 	}
 
 	d1 := time.Now().Sub(t0)
-	delta := d1.Nanoseconds() - d.Nanoseconds()
-	if delta < 0 { // POSIX said it's impossible
-		return fmt.Errorf("Slept too short: delta = %d ns", delta)
-	}
-	if delta > 50000000 { // max tolerance is 50ms
-		return fmt.Errorf("Slept too long: delta = %d ns", delta)
-	}
-
-	return nil
+	return checkDuration(d1, d)
 }
 
 func TestSleep(t *testing.T) {
@@ -117,11 +108,9 @@ func TestWaitUntil(t *testing.T) {
 		t.Fatalf("can not get time of CLOCK_MONOTONIC: %v", err)
 	}
 
-	delta := t1.Sub(ts).Nanoseconds()
-	if delta < 0 { // POSIX said it's impossible
-		t.Errorf("not waited until the time: delta = %d ns", delta)
-	}
-	if delta > 50000000 { // max tolerance is 50ms
-		t.Errorf("waited for too long: delta = %d ns", delta)
+	d := t1.Sub(*t0)
+	err = checkDuration(d, time.Second)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
