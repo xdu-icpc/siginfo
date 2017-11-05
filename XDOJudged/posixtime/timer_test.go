@@ -37,7 +37,7 @@ func TestTimer(t *testing.T) {
 
 	// To simplify the code we combine some tests in this function.
 	// Use logs to distinguish them.
-	t.Log("Testing NewTimer...")
+	t.Log("testing NewTimer...")
 
 	timer := posixtime.CLOCK_MONOTONIC.NewTimer(sleepDuration, 19260817)
 
@@ -57,7 +57,7 @@ func TestTimer(t *testing.T) {
 	}
 	t.Log("success.")
 
-	t.Log("Testing Reset...")
+	t.Log("testing Reset...")
 	err = timer.Reset(time.Millisecond * 200)
 	if err != nil {
 		t.Fatal(err)
@@ -79,14 +79,14 @@ func TestTimer(t *testing.T) {
 	}
 	t.Log("success.")
 
-	t.Log("Testing Stop active timer...")
+	t.Log("testing Stop active timer...")
 	err = timer.Reset(time.Millisecond * 100)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !timer.Stop() {
-		t.Fatalf("Stop returned false on active timer!")
+		t.Fatalf("returned false on active timer!")
 	}
 	gotimer := time.NewTimer(time.Millisecond * 200)
 	select {
@@ -96,11 +96,11 @@ func TestTimer(t *testing.T) {
 	}
 	t.Log("success.")
 
-	t.Log("Testing Stop inactive timer...")
+	t.Log("testing Stop inactive timer...")
 	timer.Reset(time.Millisecond * 10)
 	time.Sleep(time.Millisecond * 100)
 	if timer.Stop() {
-		t.Fatalf("Stop returned true on inactive timer!")
+		t.Fatalf("returned true on inactive timer!")
 	}
 	gotimer.Reset(time.Second)
 	select {

@@ -53,7 +53,7 @@ func TestSleepParallel(t *testing.T) {
 
 	d := time.Now().Sub(t0)
 	if d > sleepDuration*3/2 {
-		t.Errorf("Go routines failed to sleep simutaniously.")
+		t.Errorf("goroutines failed to sleep simutaniously.")
 	}
 }
 

@@ -35,7 +35,7 @@ func TestGetTime(t *testing.T) {
 		clock := posixtime.ClockID(i)
 		time, err := clock.GetTime()
 		if err != nil {
-			t.Errorf("Can not get the time of clock ID %d: %v", i, err)
+			t.Errorf("can not get the time of clock ID %d: %v", i, err)
 		} else {
 			t.Logf("clock ID = %d, result = %v", i, time)
 		}
@@ -50,7 +50,7 @@ func TestGetRes(t *testing.T) {
 		clock := posixtime.ClockID(i)
 		time, err := clock.GetRes()
 		if err != nil {
-			t.Errorf("Can not get the time of clock ID %d: %v", i, err)
+			t.Errorf("can not get the time of clock ID %d: %v", i, err)
 		} else {
 			t.Logf("clock ID = %d, result = %v", i, time)
 		}
@@ -60,12 +60,12 @@ func TestGetRes(t *testing.T) {
 func TestCPUClock(t *testing.T) {
 	clock, err := posixtime.GetCPUClockID(1)
 	if err != nil {
-		t.Fatalf("Can not create CPU-time clock of process 1: %v", err)
+		t.Fatalf("can not create CPU-time clock of process 1: %v", err)
 	}
 
 	time, err := clock.GetTime()
 	if err != nil {
-		t.Fatalf("Can not get the time of the CPU-time clock: %v", err)
+		t.Fatalf("can not get the time of the CPU-time clock: %v", err)
 	}
 
 	t.Logf("result = %v", time)
