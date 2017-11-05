@@ -1,4 +1,4 @@
-// Manipulate POSIX process CPU-time clocks.
+// Manipulate POSIX clocks.
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
