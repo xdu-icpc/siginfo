@@ -39,7 +39,7 @@ func TestTimer(t *testing.T) {
 	// Use logs to distinguish them.
 	t.Log("Testing NewTimer...")
 
-	timer := posixtime.CLOCK_MONOTONIC.NewTimer(time.Second, 19260817)
+	timer := posixtime.CLOCK_MONOTONIC.NewTimer(sleepDuration, 19260817)
 
 	ev := <-timer.C
 	if ev.Err != nil {
@@ -51,7 +51,7 @@ func TestTimer(t *testing.T) {
 	}
 	t1 := ev.Time
 
-	err = checkDuration(t1.Sub(*t0), time.Second)
+	err = checkDuration(t1.Sub(*t0), sleepDuration)
 	if err != nil {
 		t.Fatal(err)
 	}

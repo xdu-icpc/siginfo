@@ -41,7 +41,7 @@ func TestSleepParallel(t *testing.T) {
 
 	ch := make(chan error)
 	for i := 0; i <= 10*numCPU; i++ {
-		go routine(time.Second, ch)
+		go routine(sleepDuration, ch)
 	}
 
 	for i := 0; i <= 10*numCPU; i++ {
@@ -52,7 +52,7 @@ func TestSleepParallel(t *testing.T) {
 	}
 
 	d := time.Now().Sub(t0)
-	if d > time.Second*3/2 {
+	if d > sleepDuration*3/2 {
 		t.Errorf("Go routines failed to sleep simutaniously.")
 	}
 }

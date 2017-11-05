@@ -83,7 +83,7 @@ func sleepWell(d time.Duration) error {
 }
 
 func TestSleep(t *testing.T) {
-	err := sleepWell(time.Second)
+	err := sleepWell(sleepDuration)
 	if err != nil {
 		t.Errorf("%s", err.Error())
 	}
@@ -95,8 +95,7 @@ func TestWaitUntil(t *testing.T) {
 		t.Fatalf("can not get time of CLOCK_MONOTONIC: %v", err)
 	}
 
-	// +1s?
-	ts := t0.Add(time.Second)
+	ts := t0.Add(sleepDuration)
 
 	err = posixtime.CLOCK_MONOTONIC.WaitUntil(ts)
 	if err != nil {
@@ -109,7 +108,7 @@ func TestWaitUntil(t *testing.T) {
 	}
 
 	d := t1.Sub(*t0)
-	err = checkDuration(d, time.Second)
+	err = checkDuration(d, sleepDuration)
 	if err != nil {
 		t.Fatal(err)
 	}

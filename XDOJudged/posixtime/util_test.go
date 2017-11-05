@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const sleepDuration time.Duration = time.Millisecond * 200
+
 func checkDuration(infact time.Duration, should time.Duration) error {
 	delta := infact.Nanoseconds() - should.Nanoseconds()
 	if delta < 0 { // POSIX said it's impossible
