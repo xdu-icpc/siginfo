@@ -117,7 +117,7 @@ func TestAfterFunc(t *testing.T) {
 	posixtime.CLOCK_MONOTONIC.AfterFunc(time.Millisecond*200, "frog",
 		func(ev posixtime.TimerEvent) {
 			if ev.Err != nil {
-				ch<- ev.Err
+				ch <- ev.Err
 				return
 			}
 			d := time.Since(t0)
@@ -125,7 +125,7 @@ func TestAfterFunc(t *testing.T) {
 			if err != nil && ev.Value != "frog" {
 				err = fmt.Errorf("ev.Value = %v, should be \"frog\".")
 			}
-			ch<- err
+			ch <- err
 		})
 	gotimer := time.NewTimer(time.Millisecond * 400)
 	select {

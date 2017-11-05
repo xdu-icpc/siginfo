@@ -50,7 +50,7 @@ type Timer struct {
 	activeCh chan bool
 	clock    ClockID
 	handler  func(TimerEvent)
-	value interface{}
+	value    interface{}
 }
 
 // Stop prevents the Timer from firing.  It returns true if the call stops
@@ -105,7 +105,7 @@ func (t *Timer) arm(d time.Duration) {
 			if err == nil {
 				now, err := t.clock.GetTime()
 				if err != nil {
-					ev = TimerEvent{err, nil, t.value};
+					ev = TimerEvent{err, nil, t.value}
 				} else {
 					ev = TimerEvent{nil, now, t.value}
 				}
@@ -157,7 +157,7 @@ func (clock ClockID) NewTimer(d time.Duration, v interface{}) *Timer {
 		activeCh: make(chan bool, 1),
 		clock:    clock,
 		handler: func(ev TimerEvent) {
-			ch<- ev
+			ch <- ev
 		},
 		value: v,
 	}
