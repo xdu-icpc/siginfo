@@ -1,4 +1,4 @@
-// Unitest of clock.go.
+// Unitest of clock_*.go.
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,6 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
-// +build linux
-
 package posixtime_test
 
 import (
@@ -28,8 +26,8 @@ import (
 )
 
 func TestGetTime(t *testing.T) {
-	for i := 0; i < posixtime.CLOCK_PREDEF_NUM; i++ {
-		if i == 10 {
+	for _, i := range posixtime.ALL_CLOCKS {
+		if i == -1 {
 			continue // no such clock
 		}
 		clock := posixtime.ClockID(i)
@@ -43,8 +41,8 @@ func TestGetTime(t *testing.T) {
 }
 
 func TestGetRes(t *testing.T) {
-	for i := 0; i < posixtime.CLOCK_PREDEF_NUM; i++ {
-		if i == 10 {
+	for _, i := range posixtime.ALL_CLOCKS {
+		if i == -1 {
 			continue // no such clock
 		}
 		clock := posixtime.ClockID(i)

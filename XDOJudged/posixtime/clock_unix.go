@@ -16,7 +16,8 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
-// +build linux
+// TODO: how about windows?
+// +build darwin dragonfly freebsd linux nacl netbsd openbst solaris
 
 package posixtime
 
@@ -28,46 +29,6 @@ import (
 
 // In Linux clockid_t is int.
 type ClockID int
-
-// Pre-defined clocks in Linux.
-const (
-	// System-wide realtime clock
-	CLOCK_REALTIME ClockID = iota
-
-	// Monotonic system-wide clock
-	CLOCK_MONOTONIC
-
-	// High-resolution timer from the CPU
-	CLOCK_PROCESS_CPUTIME_ID
-
-	// Thread-specific CPU-time clock
-	CLOCK_THREAD_CPUTIME_ID
-
-	// Monotonic system-wide clock, not adjusted for frequency scaling.
-	CLOCK_MONOTONIC_RAW
-
-	// System-wide realtime clock, updated only on ticks.
-	CLOCK_REALTIME_COARSE
-
-	// Monotonic system-wide clock, updated only on ticks.
-	CLOCK_MONOTONIC_COARSE
-
-	//Monotonic system wide clock that includes time spent in suspension.
-	CLOCK_BOOTTIME
-
-	// Like CLOCK_REALTIME but also wakes suspended system.
-	CLOCK_REALTIME_ALARM
-
-	// Like CLOCK_BOOTTIME but also wakes suspended system.
-	CLOCK_BOOTTIME_ALARM
-
-	_ // No such clock.
-
-	// System-wide realtime clock using International Atomic Time.
-	CLOCK_TAI
-
-	CLOCK_PREDEF_NUM int = iota // The number of predefined clocks.
-)
 
 // GetRes returns resolution (precision) of a POSIX clock.
 func (clock ClockID) GetRes() (*time.Duration, error) {
@@ -160,7 +121,6 @@ func (clock ClockID) Sleep(d time.Duration) error {
 // We won't expose this out of the package since Go has different types
 // for time and duration.  We'll use different method names and parameter
 // types to distinguish durations and absolute times.
-const _TIMER_ABSTIME = 1
 
 // WaitUntil pauses the current goroutine until the POSIX clock reaches
 // time t.  A time before current time causes WaitUntil to return
