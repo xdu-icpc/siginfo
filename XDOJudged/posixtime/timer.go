@@ -26,6 +26,8 @@ package posixtime
 
 import (
 	"errors"
+	"runtime"
+	"syscall"
 	"time"
 )
 
@@ -51,6 +53,7 @@ type Timer struct {
 	clock    ClockID
 	handler  func(TimerEvent)
 	value    interface{}
+	sleepTid int
 }
 
 // Stop prevents the Timer from firing.  It returns true if the call stops
@@ -76,6 +79,17 @@ type Timer struct {
 // it must coordinate with f explicitly.
 func (t *Timer) Stop() bool {
 	active := <-t.activeCh
+	for tid := t.sleepTid; tid != -1; tid = t.sleepTid {
+		err := syscall.Tgkill(syscall.Getpid(), tid, syscall.SIGUSR1)
+		if err != nil {
+			// This must be a bug.
+			panic(err)
+		}
+		// Yield the processor since we are waiting for another goroutine.
+		runtime.Gosched()
+	}
+	// fill active channel after signaling the thread, so the goroutine
+	// running on it would know it can call runtime.UnlockOSThread().
 	t.activeCh <- false
 	return active
 }
@@ -84,11 +98,17 @@ func (t *Timer) Stop() bool {
 // duration d.  If there is an error setting t, the timer expires
 // immediately.
 func (t *Timer) arm(d time.Duration) {
-	t.activeCh <- true
 	// Create a goroutine to sleep for duration d and call the handler.
 	go func() {
 		// set up a TimerEvent and call handler at last.
 		var ev TimerEvent
+
+		// Lock up the thread, and save the tid.
+		runtime.LockOSThread()
+		t.sleepTid = syscall.Gettid()
+
+		// After the tid saved we can fill the active channel.
+		t.activeCh <- true
 
 		// Sleep a while.
 		err := t.clock.Sleep(d)
@@ -96,9 +116,15 @@ func (t *Timer) arm(d time.Duration) {
 			ev = TimerEvent{err, nil, t.value}
 		}
 
+		// After wake up, clear the saved tid.
+		t.sleepTid = -1
+
 		// Check if the timer is still active.
 		active := <-t.activeCh
 		t.activeCh <- false
+
+		// Release the OS thread.
+		runtime.UnlockOSThread()
 
 		// This is active.  We should call the handler.
 		if active {
@@ -159,7 +185,8 @@ func (clock ClockID) NewTimer(d time.Duration, v interface{}) *Timer {
 		handler: func(ev TimerEvent) {
 			ch <- ev
 		},
-		value: v,
+		value:    v,
+		sleepTid: -1,
 	}
 
 	t.arm(d)
@@ -178,6 +205,7 @@ func (clock ClockID) AfterFunc(d time.Duration, v interface{},
 		activeCh: make(chan bool, 1),
 		clock:    clock,
 		handler:  f,
+		sleepTid: -1,
 	}
 	t.arm(d)
 	return &t

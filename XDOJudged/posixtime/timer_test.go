@@ -22,6 +22,7 @@ package posixtime_test
 
 import (
 	"fmt"
+	"runtime"
 	"syscall"
 	"testing"
 	"time"
@@ -143,5 +144,25 @@ func TestError(t *testing.T) {
 	ev := <-timer.C
 	if ev.Err != syscall.EINVAL {
 		t.Fatalf("tv.Err = %v, should be syscall.EINVAL.", ev.Err)
+	}
+}
+
+func TestIssue4(t *testing.T) {
+	runtime.GOMAXPROCS(4)
+	// create many timers won't expire, and stop them.
+	for i := 0; i < 50; i++ {
+		timer := posixtime.CLOCK_MONOTONIC.NewTimer(time.Hour, nil)
+		if ok := timer.Stop(); !ok {
+			t.Fatalf("the timer is stopped unexpectedly.")
+		}
+	}
+	// wait the timer goroutines to stop.
+	time.Sleep(time.Millisecond * 100)
+
+	// check if we leaked goroutines
+	x := runtime.NumGoroutine()
+	t.Logf("we have %d goroutines.", x)
+	if x > 10 {
+		t.Fatalf("goroutines leaked.")
 	}
 }
