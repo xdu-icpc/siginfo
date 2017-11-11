@@ -38,8 +38,6 @@ type TimerEvent struct {
 	// If Err is nil, it contains the clock time of timer expiration.
 	// Otherwise is nil.
 	Time *time.Time
-	// It contains a caller specified value (like sigev_value).
-	Value interface{}
 }
 
 // The Timer type represents a single event.  When the Timer expires, a
@@ -52,7 +50,6 @@ type Timer struct {
 	activeCh chan bool
 	clock    ClockID
 	handler  func(TimerEvent)
-	value    interface{}
 	sleepTid int
 }
 
@@ -113,7 +110,7 @@ func (t *Timer) arm(d time.Duration) {
 		// Sleep a while.
 		err := t.clock.Sleep(d)
 		if err != nil {
-			ev = TimerEvent{err, nil, t.value}
+			ev = TimerEvent{err, nil}
 		}
 
 		// After wake up, clear the saved tid.
@@ -131,9 +128,9 @@ func (t *Timer) arm(d time.Duration) {
 			if err == nil {
 				now, err := t.clock.GetTime()
 				if err != nil {
-					ev = TimerEvent{err, nil, t.value}
+					ev = TimerEvent{err, nil}
 				} else {
-					ev = TimerEvent{nil, now, t.value}
+					ev = TimerEvent{nil, now}
 				}
 			}
 			t.handler(ev)
@@ -176,7 +173,7 @@ func (t *Timer) Reset(d time.Duration) error {
 // NewTimer creates a new Timer on clock.  The Timer would send a
 // TimerEvent its channel after at least duration d, or encounter an
 // error.
-func (clock ClockID) NewTimer(d time.Duration, v interface{}) *Timer {
+func (clock ClockID) NewTimer(d time.Duration) *Timer {
 	ch := make(chan TimerEvent)
 	t := Timer{
 		C:        ch,
@@ -185,7 +182,6 @@ func (clock ClockID) NewTimer(d time.Duration, v interface{}) *Timer {
 		handler: func(ev TimerEvent) {
 			ch <- ev
 		},
-		value:    v,
 		sleepTid: -1,
 	}
 
@@ -197,8 +193,7 @@ func (clock ClockID) NewTimer(d time.Duration, v interface{}) *Timer {
 // goroutine, with a TimerEvent as arugment.  It returns a Timer that can
 // be used to cancel the call using its Stop method.  If AfterFunc encounter
 // an error, f is called immediately in its own goroutine.
-func (clock ClockID) AfterFunc(d time.Duration, v interface{},
-	f func(TimerEvent)) *Timer {
+func (clock ClockID) AfterFunc(d time.Duration, f func(TimerEvent)) *Timer {
 	ch := make(chan TimerEvent)
 	t := Timer{
 		C:        ch,

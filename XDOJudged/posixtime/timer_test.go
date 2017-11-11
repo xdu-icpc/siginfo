@@ -21,7 +21,6 @@
 package posixtime_test
 
 import (
-	"fmt"
 	"runtime"
 	"syscall"
 	"testing"
@@ -40,16 +39,13 @@ func TestTimer(t *testing.T) {
 	// Use logs to distinguish them.
 	t.Log("testing NewTimer...")
 
-	timer := posixtime.CLOCK_MONOTONIC.NewTimer(sleepDuration, 19260817)
+	timer := posixtime.CLOCK_MONOTONIC.NewTimer(sleepDuration)
 
 	ev := <-timer.C
 	if ev.Err != nil {
 		t.Fatal(ev.Err)
 	}
 
-	if ev.Value != 19260817 {
-		t.Fatalf("ev.Value = %v, should be 19260817.", ev.Value)
-	}
 	t1 := ev.Time
 
 	err = checkDuration(t1.Sub(*t0), sleepDuration)
@@ -62,10 +58,6 @@ func TestTimer(t *testing.T) {
 	err = timer.Reset(time.Millisecond * 200)
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	if ev.Value != 19260817 {
-		t.Fatalf("ev.Value = %v, should be 19260817.", ev.Value)
 	}
 
 	ev = <-timer.C
@@ -115,7 +107,7 @@ func TestTimer(t *testing.T) {
 func TestAfterFunc(t *testing.T) {
 	t0 := time.Now()
 	ch := make(chan error)
-	posixtime.CLOCK_MONOTONIC.AfterFunc(time.Millisecond*200, "frog",
+	posixtime.CLOCK_MONOTONIC.AfterFunc(time.Millisecond*200,
 		func(ev posixtime.TimerEvent) {
 			if ev.Err != nil {
 				ch <- ev.Err
@@ -123,9 +115,6 @@ func TestAfterFunc(t *testing.T) {
 			}
 			d := time.Since(t0)
 			err := checkDuration(d, time.Millisecond*200)
-			if err != nil && ev.Value != "frog" {
-				err = fmt.Errorf("ev.Value = %v, should be \"frog\".")
-			}
 			ch <- err
 		})
 	gotimer := time.NewTimer(time.Millisecond * 400)
@@ -140,7 +129,7 @@ func TestAfterFunc(t *testing.T) {
 }
 
 func TestError(t *testing.T) {
-	timer := posixtime.CLOCK_THREAD_CPUTIME_ID.NewTimer(time.Second, nil)
+	timer := posixtime.CLOCK_THREAD_CPUTIME_ID.NewTimer(time.Second)
 	ev := <-timer.C
 	if ev.Err != syscall.EINVAL {
 		t.Fatalf("tv.Err = %v, should be syscall.EINVAL.", ev.Err)
@@ -151,7 +140,7 @@ func TestIssue4(t *testing.T) {
 	runtime.GOMAXPROCS(4)
 	// create many timers won't expire, and stop them.
 	for i := 0; i < 50; i++ {
-		timer := posixtime.CLOCK_MONOTONIC.NewTimer(time.Hour, nil)
+		timer := posixtime.CLOCK_MONOTONIC.NewTimer(time.Hour)
 		if ok := timer.Stop(); !ok {
 			t.Fatalf("the timer is stopped unexpectedly.")
 		}
