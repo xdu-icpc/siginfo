@@ -21,6 +21,7 @@
 package posixtime_test
 
 import (
+	"math/rand"
 	"runtime"
 	"syscall"
 	"testing"
@@ -138,13 +139,22 @@ func TestError(t *testing.T) {
 
 func TestIssue4(t *testing.T) {
 	runtime.GOMAXPROCS(4)
-	// create many timers won't expire, and stop them.
+	var timers [50]*posixtime.Timer
+	// create many timers won't expire.
 	for i := 0; i < 50; i++ {
-		timer := posixtime.CLOCK_MONOTONIC.NewTimer(time.Hour)
-		if ok := timer.Stop(); !ok {
+		timers[i] = posixtime.CLOCK_MONOTONIC.NewTimer(time.Hour)
+	}
+
+	// stop the timers in random sequence.
+	src := rand.NewSource(19260817)
+	rd := rand.New(src)
+	perm := rd.Perm(50)
+	for _, i := range(perm) {
+		if ok := timers[i].Stop(); !ok {
 			t.Fatalf("the timer is stopped unexpectedly.")
 		}
 	}
+
 	// wait the timer goroutines to stop.
 	time.Sleep(time.Millisecond * 100)
 
