@@ -44,6 +44,10 @@ type TimerEvent struct {
 // TimerEvent will be sent on C, unless the Timer was created by
 // AfterFunc. A Timer must be created with ClockID.NewTimer or
 // ClockID.AfterFunc.
+//
+// Note that the signal SIGUSR2 is reserved by the timer implementation.
+// If you try to handle SIGUSR2 with os/signal package you may get strange
+// result. Do not do that.
 type Timer struct {
 	C <-chan TimerEvent
 
@@ -76,8 +80,10 @@ type Timer struct {
 // it must coordinate with f explicitly.
 func (t *Timer) Stop() bool {
 	active := <-t.activeCh
+
+	// We are still unclear about how this loop work.
 	for tid := t.sleepTid; tid != -1; tid = t.sleepTid {
-		err := syscall.Tgkill(syscall.Getpid(), tid, syscall.SIGUSR1)
+		err := syscall.Tgkill(syscall.Getpid(), tid, syscall.SIGUSR2)
 		if err != nil {
 			// This must be a bug.
 			panic(err)
