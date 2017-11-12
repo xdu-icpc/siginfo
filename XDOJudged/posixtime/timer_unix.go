@@ -16,7 +16,7 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
-// +build linux
+// +build darwin dragonfly freebsd linux nacl netbsd openbst solaris
 
 package posixtime
 
