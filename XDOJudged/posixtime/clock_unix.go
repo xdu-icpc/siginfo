@@ -22,9 +22,10 @@
 package posixtime
 
 import (
-	"syscall"
 	"time"
 	"unsafe"
+
+	"golang.org/x/sys/unix"
 )
 
 // In Linux clockid_t is int.
@@ -32,9 +33,9 @@ type ClockID int
 
 // GetRes returns resolution (precision) of a POSIX clock.
 func (clock ClockID) GetRes() (*time.Duration, error) {
-	var ts syscall.Timespec
+	var ts unix.Timespec
 
-	_, _, errno := syscall.Syscall(syscall.SYS_CLOCK_GETRES,
+	_, _, errno := unix.Syscall(unix.SYS_CLOCK_GETRES,
 		uintptr(clock),
 		uintptr(unsafe.Pointer(&ts)),
 		uintptr(0))
@@ -57,8 +58,8 @@ func GetCPUClockID(pid int) (*ClockID, error) {
 
 	// Do a clock_getres call to validate it.
 	_, err := id.GetRes()
-	if err == syscall.EINVAL {
-		err = syscall.ESRCH
+	if err == unix.EINVAL {
+		err = unix.ESRCH
 	}
 
 	if err != nil {
@@ -70,9 +71,9 @@ func GetCPUClockID(pid int) (*ClockID, error) {
 
 // GetTime returns the time of a POSIX clock.
 func (clock ClockID) GetTime() (*time.Time, error) {
-	var ts syscall.Timespec
+	var ts unix.Timespec
 
-	_, _, errno := syscall.Syscall(syscall.SYS_CLOCK_GETTIME,
+	_, _, errno := unix.Syscall(unix.SYS_CLOCK_GETTIME,
 		uintptr(clock),
 		uintptr(unsafe.Pointer(&ts)),
 		uintptr(0))
@@ -84,7 +85,7 @@ func (clock ClockID) GetTime() (*time.Time, error) {
 	return &ret, nil
 }
 
-func (clock ClockID) nanosleep(ts syscall.Timespec, flag int) error {
+func (clock ClockID) nanosleep(ts unix.Timespec, flag int) error {
 	// POSIX said clock_nanosleep should be a cancellation point.  But
 	// goroutines can't be canceled so we ignore the cancellation things.
 	// And also, POSIX said clock_nanosleep can be interrupted and return
@@ -94,14 +95,14 @@ func (clock ClockID) nanosleep(ts syscall.Timespec, flag int) error {
 	// The system call doesn't support predefined CPU clocks.
 	// Special case them.
 	if clock == CLOCK_THREAD_CPUTIME_ID {
-		return syscall.EINVAL
+		return unix.EINVAL
 	}
 	if clock == CLOCK_PROCESS_CPUTIME_ID {
 		clock = ClockID((^0)<<3 | 2)
 	}
 
 	// Do real system call.
-	_, _, errno := syscall.Syscall6(syscall.SYS_CLOCK_NANOSLEEP,
+	_, _, errno := unix.Syscall6(unix.SYS_CLOCK_NANOSLEEP,
 		uintptr(clock), uintptr(flag), uintptr(unsafe.Pointer(&ts)),
 		uintptr(0), uintptr(0), uintptr(0))
 
@@ -115,20 +116,16 @@ func (clock ClockID) nanosleep(ts syscall.Timespec, flag int) error {
 // Sleep pauses the current goroutine for at least duration d on a POSIX
 // clock.  A negative or zero duration causes Sleep to return immediately.
 func (clock ClockID) Sleep(d time.Duration) error {
-	return clock.nanosleep(syscall.NsecToTimespec(d.Nanoseconds()), 0)
+	return clock.nanosleep(unix.NsecToTimespec(d.Nanoseconds()), 0)
 }
-
-// We won't expose this out of the package since Go has different types
-// for time and duration.  We'll use different method names and parameter
-// types to distinguish durations and absolute times.
 
 // WaitUntil pauses the current goroutine until the POSIX clock reaches
 // time t.  A time before current time causes WaitUntil to return
 // immediately.
 func (clock ClockID) WaitUntil(t time.Time) error {
-	ts := syscall.Timespec{
-		syscall.Timespec_sec_t(t.Unix()),
-		syscall.Timespec_nsec_t(t.Nanosecond()),
+	ts := unix.Timespec{
+		t.Unix(),
+		int64(t.Nanosecond()),
 	}
 	return clock.nanosleep(ts, _TIMER_ABSTIME)
 }
