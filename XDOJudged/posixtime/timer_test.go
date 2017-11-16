@@ -23,10 +23,10 @@ package posixtime_test
 import (
 	"math/rand"
 	"runtime"
-	"syscall"
 	"testing"
 	"time"
 
+	"golang.org/x/sys/unix"
 	"linux.xidian.edu.cn/git/XDU_ACM_ICPC/XDOJ-next/XDOJudged/posixtime"
 )
 
@@ -132,8 +132,8 @@ func TestAfterFunc(t *testing.T) {
 func TestError(t *testing.T) {
 	timer := posixtime.CLOCK_THREAD_CPUTIME_ID.NewTimer(time.Second)
 	ev := <-timer.C
-	if ev.Err != syscall.EINVAL {
-		t.Fatalf("tv.Err = %v, should be syscall.EINVAL.", ev.Err)
+	if ev.Err != unix.EINVAL {
+		t.Fatalf("tv.Err = %v, should be EINVAL.", ev.Err)
 	}
 }
 
@@ -149,7 +149,7 @@ func TestIssue4(t *testing.T) {
 	src := rand.NewSource(19260817)
 	rd := rand.New(src)
 	perm := rd.Perm(50)
-	for _, i := range(perm) {
+	for _, i := range perm {
 		if ok := timers[i].Stop(); !ok {
 			t.Fatalf("the timer is stopped unexpectedly.")
 		}
