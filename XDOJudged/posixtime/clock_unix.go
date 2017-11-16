@@ -17,7 +17,7 @@
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
 // TODO: how about windows?
-// +build darwin dragonfly freebsd linux nacl netbsd openbst solaris
+// +build dragonfly freebsd linux netbsd openbsd
 
 package posixtime
 
@@ -47,28 +47,6 @@ func (clock ClockID) GetRes() (*time.Duration, error) {
 	return &ret, nil
 }
 
-// Returns a ClockID of a POSIX CPU-time clock of the given PID.
-//
-// Note: a CPU-time clock is bound to a PID, not a specific process.
-// If a new process assumed the PID, the clock would show the CPU
-// time of this new process.
-func GetCPUClockID(pid int) (*ClockID, error) {
-	// This magic expression is from Linux kernel ABI for CPU clocks.
-	id := ClockID((^pid)<<3 | 2)
-
-	// Do a clock_getres call to validate it.
-	_, err := id.GetRes()
-	if err == unix.EINVAL {
-		err = unix.ESRCH
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &id, nil
-}
-
 // GetTime returns the time of a POSIX clock.
 func (clock ClockID) GetTime() (*time.Time, error) {
 	var ts unix.Timespec
@@ -83,49 +61,4 @@ func (clock ClockID) GetTime() (*time.Time, error) {
 
 	ret := time.Unix(ts.Unix())
 	return &ret, nil
-}
-
-func (clock ClockID) nanosleep(ts unix.Timespec, flag int) error {
-	// POSIX said clock_nanosleep should be a cancellation point.  But
-	// goroutines can't be canceled so we ignore the cancellation things.
-	// And also, POSIX said clock_nanosleep can be interrupted and return
-	// the remain unslept duration.  Normal goroutines won't handle os
-	// signals so we don't use this feature.
-
-	// The system call doesn't support predefined CPU clocks.
-	// Special case them.
-	if clock == CLOCK_THREAD_CPUTIME_ID {
-		return unix.EINVAL
-	}
-	if clock == CLOCK_PROCESS_CPUTIME_ID {
-		clock = ClockID((^0)<<3 | 2)
-	}
-
-	// Do real system call.
-	_, _, errno := unix.Syscall6(unix.SYS_CLOCK_NANOSLEEP,
-		uintptr(clock), uintptr(flag), uintptr(unsafe.Pointer(&ts)),
-		uintptr(0), uintptr(0), uintptr(0))
-
-	if errno == 0 {
-		return nil
-	}
-
-	return errno
-}
-
-// Sleep pauses the current goroutine for at least duration d on a POSIX
-// clock.  A negative or zero duration causes Sleep to return immediately.
-func (clock ClockID) Sleep(d time.Duration) error {
-	return clock.nanosleep(unix.NsecToTimespec(d.Nanoseconds()), 0)
-}
-
-// WaitUntil pauses the current goroutine until the POSIX clock reaches
-// time t.  A time before current time causes WaitUntil to return
-// immediately.
-func (clock ClockID) WaitUntil(t time.Time) error {
-	ts := unix.Timespec{
-		t.Unix(),
-		int64(t.Nanosecond()),
-	}
-	return clock.nanosleep(ts, _TIMER_ABSTIME)
 }
