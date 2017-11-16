@@ -28,9 +28,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// In Linux clockid_t is int.
-type ClockID int
-
 // GetRes returns resolution (precision) of a POSIX clock.
 func (clock ClockID) GetRes() (*time.Duration, error) {
 	var ts unix.Timespec

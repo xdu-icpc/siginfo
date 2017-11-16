@@ -1,4 +1,4 @@
-// Get macros in time.h.
+// Get macros and types in time.h.
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
@@ -70,6 +70,8 @@ package posixtime
 #endif
 */
 import "C"
+
+type ClockID C.clockid_t
 
 const (
 	_CLOCK_MONOTONIC          = C.CLOCK_MONOTONIC
