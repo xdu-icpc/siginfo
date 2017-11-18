@@ -26,7 +26,6 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/sys/unix"
 	"linux.xidian.edu.cn/git/XDU_ACM_ICPC/XDOJ-next/XDOJudged/posixtime"
 )
 
@@ -40,13 +39,12 @@ func TestTimer(t *testing.T) {
 	// Use logs to distinguish them.
 	t.Log("testing NewTimer...")
 
-	timer := posixtime.CLOCK_MONOTONIC.NewTimer(sleepDuration)
-
-	ev := <-timer.C
-	if ev.Err != nil {
-		t.Fatal(ev.Err)
+	timer, err := posixtime.CLOCK_MONOTONIC.NewTimer(sleepDuration)
+	if err != nil {
+		t.Fatalf("can not create timer: %v", err)
 	}
 
+	ev := <-timer.C
 	t1 := ev.Time
 
 	err = checkDuration(t1.Sub(*t0), sleepDuration)
@@ -58,16 +56,13 @@ func TestTimer(t *testing.T) {
 	t.Log("testing Reset...")
 	err = timer.Reset(time.Millisecond * 200)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("can not reset timer: %v", err)
 	}
 
 	ev = <-timer.C
-	if ev.Err != nil {
-		t.Fatal(ev.Err)
-	}
 	t2 := ev.Time
 
-	err = checkDuration(t2.Sub(*t1), time.Millisecond*200)
+	err = checkDuration(t2.Sub(t1), time.Millisecond*200)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +71,7 @@ func TestTimer(t *testing.T) {
 	t.Log("testing Stop active timer...")
 	err = timer.Reset(time.Millisecond * 100)
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("can not reset timer: %v", err)
 	}
 
 	if !timer.Stop() {
@@ -110,10 +105,6 @@ func TestAfterFunc(t *testing.T) {
 	ch := make(chan error)
 	posixtime.CLOCK_MONOTONIC.AfterFunc(time.Millisecond*200,
 		func(ev posixtime.TimerEvent) {
-			if ev.Err != nil {
-				ch <- ev.Err
-				return
-			}
 			d := time.Since(t0)
 			err := checkDuration(d, time.Millisecond*200)
 			ch <- err
@@ -129,20 +120,16 @@ func TestAfterFunc(t *testing.T) {
 	}
 }
 
-func TestError(t *testing.T) {
-	timer := posixtime.CLOCK_THREAD_CPUTIME_ID.NewTimer(time.Second)
-	ev := <-timer.C
-	if ev.Err != unix.EINVAL {
-		t.Fatalf("tv.Err = %v, should be EINVAL.", ev.Err)
-	}
-}
-
 func TestIssue4(t *testing.T) {
 	runtime.GOMAXPROCS(4)
 	var timers [50]*posixtime.Timer
 	// create many timers won't expire.
 	for i := 0; i < 50; i++ {
-		timers[i] = posixtime.CLOCK_MONOTONIC.NewTimer(time.Hour)
+		timer, err := posixtime.CLOCK_MONOTONIC.NewTimer(time.Hour)
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+		timers[i] = timer
 	}
 
 	// stop the timers in random sequence.
