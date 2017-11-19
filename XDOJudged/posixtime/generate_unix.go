@@ -1,4 +1,4 @@
-// POSIX specified clock IDs.
+// Generating UNIX specified files.
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,21 +16,11 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
-// +build darwin dragonfly freebsd linux nacl netbsd openbst solaris windows
+// This file just tell "go generate" to generate platform specific files.
+// There is no code here.
+
+// +build linux freebsd netbsd openbsd dragonfly
+
+//go:generate ./c2go.sh clock_c2go_unix.go
 
 package posixtime
-
-// Clocks defined by IEEE 1003.1-2008
-const (
-	// System-wide realtime clock
-	CLOCK_REALTIME ClockID = _CLOCK_REALTIME
-
-	// Monotonic system-wide clock
-	CLOCK_MONOTONIC ClockID = _CLOCK_MONOTONIC
-
-	// High-resolution timer from the CPU
-	CLOCK_PROCESS_CPUTIME_ID ClockID = _CLOCK_PROCESS_CPUTIME_ID
-
-	// Thread-specific CPU-time clock
-	CLOCK_THREAD_CPUTIME_ID ClockID = _CLOCK_THREAD_CPUTIME_ID
-)

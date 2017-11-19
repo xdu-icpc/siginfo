@@ -1,4 +1,4 @@
-// Export all avaliable clocks for test suite.
+// Generating Linux specified files.
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,6 +16,9 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
-package posixtime
+//go:generate ./c2go.sh clock_c2go_linux.go
 
-var ALL_CLOCKS = append(posixClocks[:], platformClocks[:]...)
+// This file just tell "go generate" to generate platform specific files.
+// There is no code here.
+
+package posixtime
