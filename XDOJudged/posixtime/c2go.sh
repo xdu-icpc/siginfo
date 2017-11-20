@@ -22,8 +22,33 @@
 
 # This just works.  DO NOT use this in your project.
 
+if [ $# -lt 3 ]; then
+	echo "usage: $0 {input} {oslist} {archlist}"
+	exit 2
+fi
+
 inputfile="$1"
 outputfile=$(echo $inputfile | sed "s/_${GOOS}\\.go/.go/; s/\\.go/_${GOOS}_${GOARCH}.go/; s/^.*$/z&/")
-go tool cgo -godefs $inputfile > $outputfile
-rm -rf _obj
-gofmt -w $outputfile
+oslist="$2"
+archlist="$3"
+
+osok=0
+if [ "$oslist" = "all" ]; then
+	osok=1
+elif echo "$oslist" | grep -q "$GOOS"; then
+	osok=1
+fi
+
+platok=0
+if [ "$archlist" = "all" ]; then
+	platok=1
+elif echo "$archlist" | grep -q "$GOARCH"; then
+	platok=1
+fi
+
+if [ $osok -a $platok ]; then
+	echo "$inputfile -> $outputfile"
+	go tool cgo -godefs $inputfile > $outputfile
+	rm -rf _obj
+	gofmt -w $outputfile
+fi

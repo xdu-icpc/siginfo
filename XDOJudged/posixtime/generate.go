@@ -1,4 +1,4 @@
-// Generating UNIX specified files.
+// Generate rules.
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,7 @@
 // This file just tell "go generate" to generate platform specific files.
 // There is no code here.
 
-// +build linux freebsd netbsd openbsd dragonfly
-
-//go:generate ./c2go.sh clock_c2go_unix.go
+//go:generate ./c2go.sh clock_c2go_unix.go linux,freebsd,netbsd,openbsd,dragonfly all
+//go:generate ./c2go.sh clock_c2go_linux.go linux all
 
 package posixtime
