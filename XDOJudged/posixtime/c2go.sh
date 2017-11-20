@@ -49,6 +49,9 @@ fi
 if [ $osok -a $platok ]; then
 	echo "$inputfile -> $outputfile"
 	go tool cgo -godefs $inputfile > $outputfile
+	if [ ! $? ]; then
+		rm $outputfile
+	fi
 	rm -rf _obj
 	gofmt -w $outputfile
 fi
