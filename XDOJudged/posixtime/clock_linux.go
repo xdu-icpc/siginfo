@@ -85,9 +85,6 @@ func (clock ClockID) Sleep(d time.Duration) error {
 // time t.  A time before current time causes WaitUntil to return
 // immediately.
 func (clock ClockID) WaitUntil(t time.Time) error {
-	ts := unix.Timespec{
-		t.Unix(),
-		int64(t.Nanosecond()),
-	}
+	ts := timespec(t.Unix(), t.Nanosecond())
 	return clock.nanosleep(ts, _TIMER_ABSTIME)
 }

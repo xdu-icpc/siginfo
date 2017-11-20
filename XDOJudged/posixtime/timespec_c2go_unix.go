@@ -1,4 +1,4 @@
-// Generate rules.
+// Helper to create unix.Timespec.
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,11 +16,23 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
-// This file just tell "go generate" to generate platform specific files.
-// There is no code here.
-
-//go:generate ./c2go.sh clock_c2go_unix.go linux,freebsd,netbsd,openbsd,dragonfly all
-//go:generate ./c2go.sh clock_c2go_linux.go linux all
-//go:generate ./c2go.sh timespec_c2go_unix.go linux,freebsd,netbsd,openbsd,dragonfly,darwin,solaris all
+// This file must be translated by c2go.sh for platforms.
+// +build ignore
 
 package posixtime
+
+import "golang.org/x/sys/unix"
+
+/*
+#include <time.h>
+*/
+import "C"
+
+// after c2go.sh translation, this function would contain proper type
+// conversion to create a Timespec.
+func timespec(s int64, ns int) unix.Timespec {
+	return unix.Timespec {
+		Sec: C.time_t(s),
+		Nsec: C.long(ns),
+	}
+}
