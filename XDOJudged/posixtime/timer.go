@@ -120,7 +120,7 @@ func (t *Timer) arm(d time.Duration) error {
 func (t *Timer) Reset(d time.Duration) error {
 	// Detect an obvious error and report it.
 	// But a t.C not drained can not be detected.
-	if t.armed == 1 {
+	if atomic.LoadInt32(&t.armed) == 1 {
 		return errors.New("should not Reset an active timer")
 	}
 
