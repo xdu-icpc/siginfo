@@ -28,7 +28,9 @@ var zeroits = itimerspec{}
 
 func timerRoutine(c ClockID, ts unix.Timespec, chstop chan struct{},
 	callback func()) error {
+	lockUselessLock()
 	chexpire := make(chan struct{})
+	unlockUselessLock()
 
 	// create the timer
 	sigev := sigevent{

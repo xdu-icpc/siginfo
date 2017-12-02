@@ -1,4 +1,4 @@
-// Demultiplex POSIX timer's signals.
+// Please the race detector (see timer_norace.go).
 // Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
@@ -16,33 +16,19 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
+// +build race
+
 package posixtime
 
-import (
-	"syscall"
-	"unsafe"
-)
+import "sync"
 
-func demux() {
-	var info siginfo
+// use this lock to please the race detector
+var uselessLock sync.Mutex
 
-	mask := sigsetRTMIN()
-	for {
-		err := sigwaitinfo(&mask, &info)
-		if err == syscall.EINTR {
-			// If unlucky a signal other than SIGRTMIN may be delivered
-			// to our thread.  In this case just do next loop.
-			continue
-		}
-		if err != nil {
-			panic(err)
-		}
+func lockUselessLock() {
+	uselessLock.Lock()
+}
 
-		// XXX this is really _unsafe_.  The receiver should prevent the
-		// channel to be destructed by GC.
-		lockUselessLock()
-		ch := *(*chan struct{})(unsafe.Pointer(info.getValue()))
-		unlockUselessLock()
-		close(ch)
-	}
+func unlockUselessLock() {
+	uselessLock.Unlock()
 }
