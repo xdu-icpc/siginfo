@@ -31,8 +31,8 @@ import "C"
 // after c2go.sh translation, this function would contain proper type
 // conversion to create a Timespec.
 func timespec(s int64, ns int) unix.Timespec {
-	return unix.Timespec {
-		Sec: C.time_t(s),
+	return unix.Timespec{
+		Sec:  C.time_t(s),
 		Nsec: C.long(ns),
 	}
 }
