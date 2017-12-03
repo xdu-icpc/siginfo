@@ -36,7 +36,7 @@ func timerCreate(c ClockID, e *sigevent) (timerid, error) {
 	ret := timerid(0)
 
 	for {
-		_, _, errno := unix.Syscall(unix.SYS_TIMER_CREATE, uintptr(c),
+		_, _, errno := unix.RawSyscall(unix.SYS_TIMER_CREATE, uintptr(c),
 			uintptr(unsafe.Pointer(e)), uintptr(unsafe.Pointer(&ret)))
 
 		if errno == 0 {
@@ -64,7 +64,7 @@ type itimerspec struct {
 func timerSetTime(t timerid, f int, s *itimerspec) (*itimerspec, error) {
 	oldspec := itimerspec{}
 
-	_, _, errno := unix.Syscall6(unix.SYS_TIMER_SETTIME, uintptr(t),
+	_, _, errno := unix.RawSyscall6(unix.SYS_TIMER_SETTIME, uintptr(t),
 		uintptr(f), uintptr(unsafe.Pointer(s)),
 		uintptr(unsafe.Pointer(&oldspec)), uintptr(0), uintptr(0))
 	if errno != 0 {
@@ -75,7 +75,7 @@ func timerSetTime(t timerid, f int, s *itimerspec) (*itimerspec, error) {
 }
 
 func timerDelete(t timerid) error {
-	_, _, errno := unix.Syscall(unix.SYS_TIMER_DELETE, uintptr(t),
+	_, _, errno := unix.RawSyscall(unix.SYS_TIMER_DELETE, uintptr(t),
 		uintptr(0), uintptr(0))
 	if errno != 0 {
 		return errno

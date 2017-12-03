@@ -32,7 +32,7 @@ import (
 func (clock ClockID) GetRes() (*time.Duration, error) {
 	var ts unix.Timespec
 
-	_, _, errno := unix.Syscall(unix.SYS_CLOCK_GETRES,
+	_, _, errno := unix.RawSyscall(unix.SYS_CLOCK_GETRES,
 		uintptr(clock),
 		uintptr(unsafe.Pointer(&ts)),
 		uintptr(0))
@@ -48,7 +48,7 @@ func (clock ClockID) GetRes() (*time.Duration, error) {
 func (clock ClockID) GetTime() (*time.Time, error) {
 	var ts unix.Timespec
 
-	_, _, errno := unix.Syscall(unix.SYS_CLOCK_GETTIME,
+	_, _, errno := unix.RawSyscall(unix.SYS_CLOCK_GETTIME,
 		uintptr(clock),
 		uintptr(unsafe.Pointer(&ts)),
 		uintptr(0))
