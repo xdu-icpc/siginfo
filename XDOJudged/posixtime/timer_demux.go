@@ -20,7 +20,6 @@ package posixtime
 
 import (
 	"syscall"
-	"unsafe"
 )
 
 func demux() {
@@ -38,11 +37,7 @@ func demux() {
 			panic(err)
 		}
 
-		// XXX this is really _unsafe_.  The receiver should prevent the
-		// channel to be destructed by GC.
-		lockUselessLock()
-		ch := *(*chan struct{})(unsafe.Pointer(info.getValue()))
-		unlockUselessLock()
+		ch := getChanById(int(info.getValue()))
 		close(ch)
 	}
 }

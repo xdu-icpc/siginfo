@@ -42,3 +42,18 @@ func TestTimerRoutine(t *testing.T) {
 	})
 	<-done
 }
+
+func TestTimerRoutineError(t *testing.T) {
+	// This value is a joke of "烫"/"쳌".
+	// See <https://www.zhihu.com/question/23600507>
+	illegalClock := ClockID(0xcccc)
+	_, err := illegalClock.NewTimer(time.Second)
+	if err == nil {
+		t.Fatalf("should not able to create timer on illegal clock")
+	}
+	t.Logf("err = %v", err)
+	// check leak
+	if cntChan != LIMIT_TIMER {
+		t.Fatalf("channel leaking: cntChan = %d", cntChan)
+	}
+}

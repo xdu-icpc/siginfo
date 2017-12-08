@@ -19,7 +19,7 @@
 package posixtime
 
 import (
-	"unsafe"
+	"syscall"
 
 	"golang.org/x/sys/unix"
 )
@@ -27,25 +27,35 @@ import (
 var zeroits = itimerspec{}
 
 func timerRoutine(c ClockID, ts unix.Timespec, chstop chan struct{},
-	callback func()) error {
-	lockUselessLock()
-	chexpire := make(chan struct{})
-	unlockUselessLock()
+	callback func()) (err error) {
+	chexpireId, ok := newChanId()
+	if !ok { // too many timers
+		return syscall.EAGAIN
+	}
+	chexpire := getChanById(chexpireId)
+	defer func() {
+		if err != nil {
+			close(chexpire)
+			releaseChanId(chexpireId)
+		}
+	}()
 
 	// create the timer
 	sigev := sigevent{
 		sigev_notify: _SIGEV_SIGNAL,
 		sigev_signo:  _SIGRTMIN,
 	}
-	// XXX we are storing the address of a channel into KERNEL.  It's
-	// absolutely _unsafe_.  Make sure GC won't destroy the channel too
-	// early.
-	sigev.setValue(uintptr(unsafe.Pointer(&chexpire)))
+	sigev.setValue(uintptr(chexpireId))
 
 	t, err := timerCreate(c, &sigev)
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if err != nil {
+			timerDelete(t)
+		}
+	}()
 
 	// set time for the timer
 	its := itimerspec{
@@ -54,7 +64,6 @@ func timerRoutine(c ClockID, ts unix.Timespec, chstop chan struct{},
 	}
 	_, err = timerSetTime(t, 0, &its)
 	if err != nil {
-		timerDelete(t) // do not leak kernel object
 		return err
 	}
 
@@ -71,8 +80,8 @@ func timerRoutine(c ClockID, ts unix.Timespec, chstop chan struct{},
 				// This means the timer has already expired.
 				// There is a potential race conditon: the expiration
 				// signal is still in queue and chexpire is NOT closed
-				// yet.  Then we can't give chexpire to GC, or demux()
-				// may close a destroyed channel.
+				// yet.  Then we can't call releaseChanId, or demux()
+				// may send to a channel without receiver and block forever.
 				select {
 				case <-chexpire: // Now we know chexpire is closed.
 				}
@@ -89,7 +98,8 @@ func timerRoutine(c ClockID, ts unix.Timespec, chstop chan struct{},
 		// Callback is called unconditionally.  The caller should implement
 		// cancel support.
 		go callback()
-		err = timerDelete(t)
+		releaseChanId(chexpireId)
+		timerDelete(t)
 	}()
 
 	return nil
