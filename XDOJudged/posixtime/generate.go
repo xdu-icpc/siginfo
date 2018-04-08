@@ -21,6 +21,5 @@
 
 //go:generate ./c2go.sh clock_c2go_unix.go linux,freebsd,netbsd,openbsd,dragonfly all
 //go:generate ./c2go.sh clock_c2go_linux.go linux all
-//go:generate ./c2go.sh timespec_c2go_unix.go linux,freebsd,netbsd,openbsd,dragonfly,darwin,solaris all
 
 package posixtime
