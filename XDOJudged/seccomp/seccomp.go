@@ -16,12 +16,9 @@
 
 // Author: Xi Ruoyao <ryxi@stu.xidian.edu.cn>
 
-// Package seccomp provides an interface to the Linux Kernel's syscall
-// filtering mechanism.  It's API is designed to abstract away the
-// underlying BPF based syscall filter language and provide a coventional
-// function-call based filtering interface that should be familiar to
-// application developers.
+// Package seccomp contains Seccomp BPF filters and support routines.
 //
-// Unlike "github.com/seccomp/libseccomp-golang", this package is native
-// in Go and does not require libseccomp.
+// The Seccomp is highly dependant on architecture.  It had cost months
+// to implement a generic Seccomp package but failed.  So this package
+// JUST work - do NOT use it outside XDOJ.
 package seccomp
