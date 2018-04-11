@@ -18,7 +18,17 @@
 
 // Package seccomp contains Seccomp BPF filters and support routines.
 //
-// The Seccomp is highly dependant on architecture.  It had cost months
+// Seccomp is highly dependant on architecture.  It had cost months
 // to implement a generic Seccomp package but failed.  So this package
-// JUST work - do NOT use it outside XDOJ.
+// JUST work - do NOT use it outside XDOJ unless you know what you are
+// doing.
+//
+// This package assume you'd like to use Seccomp filters.  So it use
+// prctl(2) to set no_new_privs bit at startup (even before Go runtime
+// initialization).  If you have to run setuid programs, unset it, but
+// reset it before installing filter.
+//
+// XDOJ should only use NoForkFilter and use other techniques to limit
+// system resources other than PGID.  But before Linux 4.8 there was an
+// issue so we have to filter out ptrace syscall.
 package seccomp
