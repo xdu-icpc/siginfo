@@ -19,14 +19,13 @@ func SeccompFilter(flags uintptr, filter []bpf.RawInstruction) error {
 		return unix.EINVAL
 	}
 
-	// It seems ugly but it have to be, since we can't store unsafe
-	// pointers.
-	_, _, errno := unix.RawSyscall(unix.SYS_SECCOMP,
-		1, flags,
-		uintptr(unsafe.Pointer(&sockFprog{
-			Len:    uint16(len(filter)),
-			Filter: uintptr(unsafe.Pointer(&filter[0])),
-		})))
+	sockProg := sockFprog{
+		Len:    uint16(len(filter)),
+		Filter: &filter[0],
+	}
+
+	_, _, errno := unix.RawSyscall(unix.SYS_SECCOMP, 1, flags,
+		uintptr(unsafe.Pointer(&sockProg)))
 	if errno != 0 {
 		return errno
 	}

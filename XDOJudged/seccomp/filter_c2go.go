@@ -2,6 +2,8 @@
 
 package seccomp
 
+import "golang.org/x/net/bpf"
+
 /*
 #include <linux/filter.h>
 */
