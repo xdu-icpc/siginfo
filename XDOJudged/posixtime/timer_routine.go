@@ -1,5 +1,5 @@
 // Low level routine implementing key timer functions.
-// Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
+// Copyright (C) 2017-2019  Laboratory of ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -79,8 +79,11 @@ func timerRoutine(c ClockID, ts unix.Timespec, chstop chan struct{},
 					// The process bound to the timer has been reaped.
 					old := atomic.SwapInt32(&esrchFlag[chexpireId], 1)
 					if old == 0 {
-						sigqueue(os.Getpid(), SIGRTMIN,
+						err = sigqueue(os.Getpid(), SIGRTMIN,
 							uintptr(chexpireId))
+						if err != nil {
+							panic(err)
+						}
 					}
 				} else {
 					panic(err)

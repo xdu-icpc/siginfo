@@ -1,5 +1,5 @@
 // Wrap signal related syscalls of Linux.
-// Copyright (C) 2017  Laboratory of ACM/ICPC, Xidian University
+// Copyright (C) 2017-2019  Laboratory of ICPC, Xidian University
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -51,8 +51,8 @@ func sigqueue(pid int, sig syscall.Signal, value uintptr) error {
 	si.Pid = int32(os.Getpid())
 	si.Uid = uint32(os.Getuid())
 	si.Value = value
-	_, _, errno := unix.Syscall(uintptr(pid), uintptr(sig),
-		uintptr(unsafe.Pointer(si)), 0)
+	_, _, errno := unix.Syscall(unix.SYS_RT_SIGQUEUEINFO,
+		uintptr(pid), uintptr(sig), uintptr(unsafe.Pointer(si)))
 
 	if errno != 0 {
 		return errno
