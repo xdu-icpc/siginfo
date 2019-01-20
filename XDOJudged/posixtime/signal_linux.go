@@ -51,7 +51,7 @@ func sigqueue(pid int, sig syscall.Signal, value uintptr) error {
 	si.Pid = int32(os.Getpid())
 	si.Uid = uint32(os.Getuid())
 	si.Value = value
-	_, _, errno := unix.Syscall(unix.SYS_RT_SIGQUEUEINFO,
+	_, _, errno := unix.RawSyscall(unix.SYS_RT_SIGQUEUEINFO,
 		uintptr(pid), uintptr(sig), uintptr(unsafe.Pointer(si)))
 
 	if errno != 0 {
