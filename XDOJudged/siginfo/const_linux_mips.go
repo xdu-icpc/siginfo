@@ -7,12 +7,12 @@ const (
 	SI_TKILL = -6 + iota
 	// Sent by queued SIGIO.
 	SI_SIGIO
-	// Sent by AIO completion.
-	SI_ASYNCIO
 	// Sent by real time mesq state change.
 	SI_MESGQ
 	// Sent by timer expiration.
 	SI_TIMER
+	// Sent by AIO completion.
+	SI_ASYNCIO
 	// Sent by sigqueue.
 	SI_QUEUE
 	// Sent by kill, sigsend.
