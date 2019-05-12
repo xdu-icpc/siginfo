@@ -4,7 +4,7 @@ import (
 	"testing"
 	"unsafe"
 
-	. "linux.xidian.edu.cn/git/XDU_ACM_ICPC/XDOJ-next/XDOJudged/siginfo/testaux"
+	. "github.com/xdu-icpc/siginfo/testaux"
 )
 
 func assertEqual(t *testing.T, expect uintptr, get uintptr) {

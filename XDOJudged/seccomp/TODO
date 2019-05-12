@@ -1,3 +1,0 @@
-1. Write rules for other GOARCH.
-
-2. Workaround "ptrace escape" issue before Linux 4.8.
