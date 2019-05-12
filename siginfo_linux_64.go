@@ -1,3 +1,5 @@
+//SPDX-License-Identifier: Beerware
+
 // +build amd64 arm64 ppc64 s390x
 
 package siginfo

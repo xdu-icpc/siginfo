@@ -1,3 +1,5 @@
+//SPDX-License-Identifier: Beerware
+
 package siginfo
 
 // Values for Siginfo.Code.  Positive values are reserved for

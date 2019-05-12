@@ -1,3 +1,5 @@
+//SPDX-License-Identifier: Beerware
+
 package siginfo
 
 import (

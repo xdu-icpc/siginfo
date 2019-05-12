@@ -1,3 +1,5 @@
+//SPDX-License-Identifier: Beerware
+
 // +build arm 386
 
 package siginfo
