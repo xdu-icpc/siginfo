@@ -21,20 +21,20 @@ const int offset_stime = __builtin_offsetof(siginfo_t, si_stime);
 */
 import "C"
 
-const (
-	OffsetPid = C.offset_pid
-	OffsetUid = C.offset_uid
-	OffsetTimer = C.offset_timer
-	OffsetOverrun = C.offset_overrun
-	OffsetStatus = C.offset_status
-	OffsetValue = C.offset_value
-	OffsetAddr = C.offset_addr
-	OffsetAddrLsb = C.offset_addr_lsb
-	OffsetBand = C.offset_band
-	OffsetFd = C.offset_fd
-	OffsetCallAddr = C.offset_call_addr
-	OffsetSyscall = C.offset_syscall
-	OffsetArch = C.offset_arch
-	OffsetUtime = C.offset_utime
-	OffsetStime = C.offset_stime
+var (
+	OffsetPid = uintptr(C.offset_pid)
+	OffsetUid = uintptr(C.offset_uid)
+	OffsetTimer = uintptr(C.offset_timer)
+	OffsetOverrun = uintptr(C.offset_overrun)
+	OffsetStatus = uintptr(C.offset_status)
+	OffsetValue = uintptr(C.offset_value)
+	OffsetAddr = uintptr(C.offset_addr)
+	OffsetAddrLsb = uintptr(C.offset_addr_lsb)
+	OffsetBand = uintptr(C.offset_band)
+	OffsetFd = uintptr(C.offset_fd)
+	OffsetCallAddr = uintptr(C.offset_call_addr)
+	OffsetSyscall = uintptr(C.offset_syscall)
+	OffsetArch = uintptr(C.offset_arch)
+	OffsetUtime = uintptr(C.offset_utime)
+	OffsetStime = uintptr(C.offset_stime)
 )
